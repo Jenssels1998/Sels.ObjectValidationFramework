@@ -1,4 +1,4 @@
-#Sels.ObjectValidationFramework
+# Sels.ObjectValidationFramework
 As the name suggest this is a framework for easiliy implementing validation for poco classes.
 
 It provides an AutoMapper like syntax in the form of validation profiles.
