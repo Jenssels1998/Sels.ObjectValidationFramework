@@ -22,9 +22,9 @@ Projects in the solution folder 'Shared' are shared projects imported from anoth
 ### Sels.Core
 Code can be cloned from here: https://github.com/Jenssels1998/Sels.Core
 
-Folder structure should be
-  SomeFolder
-    Sels.Core
+Folder structure should be\
+  SomeFolder\
+    Sels.Core\
     Sels.ObjectValidationFramework (this project)
 
 
