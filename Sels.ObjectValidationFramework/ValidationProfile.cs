@@ -14,6 +14,7 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
+using Sels.Core.Extensions.Reflection.Object;
 
 namespace Sels.ObjectValidationFramework
 {
@@ -107,7 +108,21 @@ namespace Sels.ObjectValidationFramework
 
             var parentType = property.DeclaringType;
 
-            return IgnoredProperties.ContainsItem(parentType, property);
+            foreach(var pair in IgnoredProperties)
+            {
+                if (pair.Key.IsAssignableFrom(parentType))
+                {
+                    foreach(var ignoredProperty in pair.Value)
+                    {
+                        if (property.AreEqual(ignoredProperty))
+                        {
+                            return true;
+                        }
+                    }
+                }
+            }
+
+            return false;
         }
         #endregion
         #endregion

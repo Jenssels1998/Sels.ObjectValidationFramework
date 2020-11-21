@@ -47,8 +47,14 @@ namespace Sels.ObjectValidationFramework.TestTool
                             Id = 2,
                             FirstName = null,
                             LastName = "\t",
-                            Age = 0
-                        },new Person()
+                            Age = 0,
+                            Owner = new Person()
+                            {
+                                Id = 4,
+                                Age = 999
+                            }
+                        },
+                        new Person()
                         {
                             Id = 3,
                             FirstName = "Some name",
