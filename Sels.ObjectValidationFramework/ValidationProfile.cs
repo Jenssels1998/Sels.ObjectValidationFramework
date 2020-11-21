@@ -4,10 +4,14 @@ using Sels.Core.Components.Caching;
 using Sels.Core.Extensions.General.Validation;
 using Sels.Core.Extensions.Logging;
 using Sels.Core.Extensions.Object.Time;
+using Sels.Core.Extensions.Reflection.Expressions;
+using Sels.Core.Extensions.Object.ItemContainer;
 using Sels.ObjectValidationFramework.Validator;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq.Expressions;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
 
@@ -20,16 +24,16 @@ namespace Sels.ObjectValidationFramework
 
         // Fields
         private ILogger _logger;
-        private List<BaseValidator> _validators = new List<BaseValidator>();
+        private readonly List<BaseValidator> _validators = new List<BaseValidator>();
 
         // Properties
-        internal ValueCache<ReadOnlyCollection<BaseValidator>> Validators { get; }
+        internal ReadOnlyCollection<BaseValidator> Validators => new ReadOnlyCollection<BaseValidator>(_validators);
+        internal Dictionary<Type, List<PropertyInfo>> IgnoredProperties { get; } = new Dictionary<Type, List<PropertyInfo>>();
 
         public ValidationProfile()
         {
             var factory = new NullLoggerFactory();
             _logger = factory.CreateLogger(LogCategory);
-            Validators = new ValueCache<ReadOnlyCollection<BaseValidator>>(() => new ReadOnlyCollection<BaseValidator>(_validators));
         }
 
         public ValidationProfile(ILoggerFactory factory)
@@ -56,29 +60,56 @@ namespace Sels.ObjectValidationFramework
             }        
         }
 
+        #region Profile importing
         /// <summary>
         /// Used to add validators from profileInstance to this profile
         /// </summary>
         /// <param name="profileInstance"></param>
-        public void JoinProfile(ValidationProfile<TError> profileInstance)
+        public void ImportProfile(ValidationProfile<TError> profileInstance)
         {
             profileInstance.ValidateVariable(nameof(profileInstance));
             _logger.LogMessage(LogLevel.Information, () => $"Joining validators from profile {profileInstance.GetType()}");
 
-            _validators.AddRange(profileInstance._validators);
+            _validators.AddRange(profileInstance.Validators);
+            IgnoredProperties.Merge(profileInstance.IgnoredProperties);
         }
 
         /// <summary>
         /// Used to add validators from TProfile to this profile
         /// </summary>
         /// <typeparam name="TProfile">Type of validation profile</typeparam>
-        public void JoinProfile<TProfile>() where TProfile : ValidationProfile<TError>, new()
+        public void ImportProfile<TProfile>() where TProfile : ValidationProfile<TError>, new()
         {
             _logger.LogMessage(LogLevel.Information, () => $"Joining validators from profile {typeof(TProfile)}");
             var profileInstance = new TProfile();
 
-            _validators.AddRange(profileInstance._validators);
+            ImportProfile(profileInstance);
         }
+        #endregion
+
+        #region Ignoring Properties
+        /// <summary>
+        /// Ignores a property for validation. By default the ObjectValidator will check if any IValidators exist for the types on the properties and the underlying types on IEnumerable properties. 
+        /// </summary>
+        /// <typeparam name="TObject">Object containing the property to ignore</typeparam>
+        /// <param name="property">Property to ignore</param>
+        public void IgnorePropertyForValidation<TObject>(Expression<Func<TObject, object>> property)
+        {
+            var propertyInfo = property.ExtractProperty(nameof(property));
+            var objectType = typeof(TObject);
+
+            IgnoredProperties.AddValue(objectType, propertyInfo);
+        }
+
+        internal bool IsIgnored(PropertyInfo property)
+        {
+            property.ValidateVariable(nameof(property));
+
+            var parentType = property.DeclaringType;
+
+            return IgnoredProperties.ContainsItem(parentType, property);
+        }
+        #endregion
         #endregion
     }
 }

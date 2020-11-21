@@ -28,7 +28,6 @@ namespace Sels.ObjectValidationFramework.Validator
         private readonly List<BasePropertyValidationExecutor<TObject>> _propertyValidationExecutors = new List<BasePropertyValidationExecutor<TObject>>();
         private readonly List<BasePropertyValidationExecutor<TObject>> _propertyCollectionValidationExecutors = new List<BasePropertyValidationExecutor<TObject>>();
         private readonly List<BaseValidationExecutor<TObject>> _validationExecutors = new List<BaseValidationExecutor<TObject>>();
-        private readonly List<PropertyInfo> _ignoredProperties = new List<PropertyInfo>();
         private readonly List<Predicate<TObject>> _conditions = new List<Predicate<TObject>>();
         private readonly List<Action<TObject>> _preValidationActions = new List<Action<TObject>>();
         private readonly List<Action<TObject, IEnumerable<TError>>> _postValidationActions = new List<Action<TObject, IEnumerable<TError>>>();
@@ -36,7 +35,6 @@ namespace Sels.ObjectValidationFramework.Validator
 
         // Properties
         internal override Type TargetObjectType => typeof(TObject);
-        internal override ValueCache<ReadOnlyCollection<PropertyInfo>> IgnoredProperties { get; }
         internal override Delegate ValidateDelegate { get; }
 
         // State
@@ -47,8 +45,6 @@ namespace Sels.ObjectValidationFramework.Validator
             logger.ValidateVariable(nameof(logger));
 
             _logger = logger;
-
-            IgnoredProperties = new ValueCache<ReadOnlyCollection<PropertyInfo>>(() => new ReadOnlyCollection<PropertyInfo>(_ignoredProperties));
 
             ValidateDelegate = this.CreateDelegateForMethod(nameof(Validate));
         }
@@ -138,21 +134,6 @@ namespace Sels.ObjectValidationFramework.Validator
             }
 
             return this;
-        }
-
-        public IValidator<TObject, TError> IgnorePropertyForValidation(Expression<Func<TObject, object>> property)
-        {
-            using (var logger = _logger.CreateTimedLogger(LogLevel.Information, () => $"Ignoring property validation on Object({typeof(TObject)})", x => $"Could not ignore property on Object({typeof(TObject)}) ({x.PrintTotalMs()})"))
-            {
-                property.ValidateVariable(nameof(property));
-
-                var propertyInfo = property.ExtractProperty(nameof(property));
-
-                _ignoredProperties.Add(propertyInfo);
-
-                logger.EndLog(x => $"Ingored property validation for {propertyInfo.Name} on Object({typeof(TObject)})");
-                return this;
-            }
         }
         #endregion
 

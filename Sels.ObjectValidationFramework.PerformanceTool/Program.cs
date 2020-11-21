@@ -10,16 +10,16 @@ namespace Sels.ObjectValidationFramework.PerformanceTool
     class Program
     {
         // Constants
-        private const bool Verbose = true;
+        private const bool Verbose = false;
 
         static void Main(string[] args)
         {
             ConsoleHelper.Run(() =>
             {
                 Console.WriteLine("Starting up");
-                TestValidationPerformanceValidObject<Person, PersonValidationProfile>(SimpleObjects.ValidAdultPerson, "Validation performance test", "Valid Person validation", 100000);
-                TestValidationPerformanceValidObject<Person, PersonValidationProfile>(SimpleObjects.InvalidAdultPerson, "Validation performance test", "Invalid Person validation", 100000);
-                TestValidationPerformanceProfileCreation(100000);
+                TestValidationPerformanceValidObject<Person, PersonValidationProfile>(SimpleObjects.ValidAdultPerson, "Validation performance test", "Valid Person validation", 10000);
+                TestValidationPerformanceValidObject<Person, PersonValidationProfile>(SimpleObjects.InvalidAdultPerson, "Validation performance test", "Invalid Person validation", 10000);
+                TestValidationPerformanceProfileCreation(10000);
             });
         }
 

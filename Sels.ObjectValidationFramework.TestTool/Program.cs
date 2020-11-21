@@ -37,17 +37,20 @@ namespace Sels.ObjectValidationFramework.TestTool
 
                 var inValidPerson = new Person()
                 {
+                    Id = 1,
                     FirstName = "",
                     LastName = null,
                     Age = -19,
                     Children = new List<Person>() { 
                         new Person()
                         {
+                            Id = 2,
                             FirstName = null,
                             LastName = "\t",
                             Age = 0
                         },new Person()
                         {
+                            Id = 3,
                             FirstName = "Some name",
                             LastName = "Same last name",
                             Age = 36,
@@ -58,11 +61,11 @@ namespace Sels.ObjectValidationFramework.TestTool
 
                 var validErrors = ObjectValidator.Validate(profile, validPerson);
 
-                Console.WriteLine($"Errors on valid person: {(validErrors.HasValue() ? validErrors.JoinNewLine() : "None")}");
+                Console.WriteLine($"Errors on valid person: {Environment.NewLine}{(validErrors.HasValue() ? validErrors.JoinNewLine() : "None")}");
 
                 var inValidErrors = ObjectValidator.Validate(profile, inValidPerson);
 
-                Console.WriteLine($"Errors on invalid person: {(inValidErrors.HasValue() ? inValidErrors.JoinNewLine() : "None")}");
+                Console.WriteLine($"Errors on invalid person: {Environment.NewLine}{(inValidErrors.HasValue() ? inValidErrors.JoinNewLine() : "None")}");
 
             });
         }

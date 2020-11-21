@@ -21,10 +21,9 @@ namespace Sels.ObjectValidationFramework
         {
             profile.ValidateVariable(nameof(profile));
 
-            var validators = profile.Validators.Value;
             var objectType = typeof(TObject);
 
-            var errors = validators.Validate<TError>(objectToValidate, objectType);
+            var errors = profile.ValidateObject<TError>(objectToValidate, objectType);
 
             return errors;
         }
@@ -34,42 +33,44 @@ namespace Sels.ObjectValidationFramework
             profile.ValidateVariable(nameof(profile));
             objectType.ValidateVariable(nameof(objectType));
 
-            var validators = profile.Validators.Value;
-
-            var errors = validators.Validate<TError>(objectToValidate, objectType);
+            var errors = profile.ValidateObject<TError>(objectToValidate, objectType);
 
             return errors;
         }
 
 
-        private static IEnumerable<TError> Validate<TError>(this IEnumerable<BaseValidator> validators, object objectToValidate, Type objectType)
+        private static IEnumerable<TError> ValidateObject<TError>(this ValidationProfile<TError> profile, object objectToValidate, Type objectType)
         {
             var errors = new List<TError>();
 
-            var objectValidators = validators.GetValidatorsForType(objectType);
+            var validators = profile.Validators.GetValidatorsForType(objectType);
 
             // Validate object
-            foreach (var validator in objectValidators)
+            foreach (var validator in validators)
             {
                 var objectErrors = validator.ValidateDelegate.Invoke<IEnumerable<TError>>(objectToValidate);
                 errors.AddRange(objectErrors);
             }
 
             // Validate underlying types
-            errors.AddRange(validators.ValidatePropertyTypes<TError>(objectToValidate));
+            errors.AddRange(profile.ValidatePropertyTypes<TError>(objectToValidate));
                 
 
             return errors;
         }
 
-        private static IEnumerable<TError> ValidatePropertyTypes<TError>(this IEnumerable<BaseValidator> validators, object objectToValidate)
+        private static IEnumerable<TError> ValidatePropertyTypes<TError>(this ValidationProfile<TError> profile, object objectToValidate)
         {
             var errors = new List<TError>();
 
             if (objectToValidate == null) return errors;
 
+            var validators = profile.Validators;
+
             foreach(var property in objectToValidate.GetProperties())
             {
+                if (profile.IsIgnored(property)) continue;
+
                 var propertyType = property.PropertyType;
                 var propertyValue = property.GetValue(objectToValidate);
 
@@ -78,7 +79,7 @@ namespace Sels.ObjectValidationFramework
                 // Validate underlying type
                 if (validators.HasValidatorForProperty(property))
                 {
-                    errors.AddRange(validators.Validate<TError>(propertyValue, property.PropertyType));
+                    errors.AddRange(profile.ValidateObject<TError>(propertyValue, property.PropertyType));
                 }
 
                 // If we find a collection we look at the item type and see if we have a validator for it
@@ -90,7 +91,7 @@ namespace Sels.ObjectValidationFramework
                         // We have a validator for the item type. We now loop over the items in the collection and trigger validation
                         foreach (var item in (IEnumerable)propertyValue)
                         {
-                            errors.AddRange(validators.Validate<TError>(item, itemType));
+                            errors.AddRange(profile.ValidateObject<TError>(item, itemType));
                         }                        
                     }
                 }

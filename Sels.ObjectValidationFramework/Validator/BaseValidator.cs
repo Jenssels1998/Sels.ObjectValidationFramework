@@ -11,7 +11,6 @@ namespace Sels.ObjectValidationFramework.Validator
     public abstract class BaseValidator
     {
         internal abstract Type TargetObjectType { get; }
-        internal abstract ValueCache<ReadOnlyCollection<PropertyInfo>> IgnoredProperties { get; }
 
         internal abstract Delegate ValidateDelegate { get; }
     }
