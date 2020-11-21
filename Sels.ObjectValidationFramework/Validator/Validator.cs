@@ -236,13 +236,20 @@ namespace Sels.ObjectValidationFramework.Validator
                         var property = properties[i];
 
                         // Get all validation cases for this property
-                        foreach (var validationCase in _propertyValidationExecutors.Where(x => x.TargetProperty.Equals(property) && x.CanRun(value)))
+                        foreach (var validationCase in _propertyValidationExecutors.Where(x => x.TargetProperty.AreEqual(property) && x.CanRun(value)))
                         {
-                            var (hasError, error) = validationCase.ValidateDelegate.Invoke<(bool HasError, TError Error)>(property.GetValue(value), value);
-                            if (hasError)
+                            try
                             {
-                                errors.Add(error);
+                                var (hasError, error) = validationCase.ValidateDelegate.Invoke<(bool HasError, TError Error)>(property.GetValue(value), value);
+                                if (hasError)
+                                {
+                                    errors.Add(error);
+                                }
                             }
+                            catch(Exception ex)
+                            {
+                                _logger.LogException(LogLevel.Warning, () => $"Could not validate property <{property.Name}> on Object({typeof(TObject)})", ex);
+                            }                            
                         }
                     }
                 }
@@ -264,13 +271,20 @@ namespace Sels.ObjectValidationFramework.Validator
                     {
                         var property = properties[i];
 
-                        // Get all validation cases for this property
-                        foreach (var validationCase in _propertyCollectionValidationExecutors.Where(x => x.TargetProperty.Equals(property) && x.CanRun(value)))
+                        // Get all validation cases for this collection property
+                        foreach (var validationCase in _propertyCollectionValidationExecutors.Where(x => x.TargetProperty.AreEqual(property) && x.CanRun(value)))
                         {
-                            var (hasError, validationErrors) = validationCase.ValidateDelegate.Invoke<(bool HasError, IEnumerable<TError> Errors)>(property.GetValue(value), value);
-                            if (hasError)
+                            try
                             {
-                                errors.AddRange(validationErrors);
+                                var (hasError, validationErrors) = validationCase.ValidateDelegate.Invoke<(bool HasError, IEnumerable<TError> Errors)>(property.GetValue(value), value);
+                                if (hasError)
+                                {
+                                    errors.AddRange(validationErrors);
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                _logger.LogException(LogLevel.Warning, () => $"Could not validate collection property <{property.Name}> on Object({typeof(TObject)})", ex);
                             }
                         }
                     }
@@ -292,10 +306,17 @@ namespace Sels.ObjectValidationFramework.Validator
                     // Get all validation cases for this object
                     foreach (var validationCase in _validationExecutors.Where(x => x.CanRun(value)))
                     {
-                        var (hasError, error) = validationCase.ValidateDelegate.Invoke<(bool HasError, TError Error)>(value);
-                        if (hasError)
+                        try
                         {
-                            errors.Add(error);
+                            var (hasError, error) = validationCase.ValidateDelegate.Invoke<(bool HasError, TError Error)>(value);
+                            if (hasError)
+                            {
+                                errors.Add(error);
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogException(LogLevel.Warning, () => $"Could not validate Object({typeof(TObject)})", ex);
                         }
                     }
                 }            

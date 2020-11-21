@@ -94,9 +94,7 @@ namespace Sels.ObjectValidationFramework
                             errors.AddRange(profile.ValidateObject<TError>(item, itemType));
                         }                        
                     }
-                }
-
-                
+                }             
             }
 
             return errors;
