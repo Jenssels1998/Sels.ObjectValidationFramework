@@ -15,9 +15,10 @@ namespace Sels.ObjectValidationFramework.PerformanceTool.Profiles
 
         public PersonValidationProfile()
         {
+            IgnorePropertyForValidation<Person>(x => x.Spouse);
+
             CreateValidator<Person>()
                 .IfNull(() => $"{nameof(Person)} cannot be null.")
-                .IgnorePropertyForValidation(x => x.Spouse)
                 .CannotBeNullOrWhiteSpace(x => x.FirstName, (x, y) => $"Person[{y.Id}]: {nameof(Person.FirstName)} cannot be null or whitespace. Was: <{x}>")
                 .CannotBeNullOrWhiteSpace(x => x.LastName, (x, y) => $"Person[{y.Id}]: {nameof(Person.LastName)} cannot be null or whitespace. Was: <{x}>")
                 .MustBeInPast(x => x.BirthDate, (x, y) => $"Person[{y.Id}]: {nameof(Person.BirthDate)} cannot be in the future. Was: <{x}>")

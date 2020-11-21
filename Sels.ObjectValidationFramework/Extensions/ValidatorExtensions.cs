@@ -18,7 +18,7 @@ namespace Sels.ObjectValidationFramework.Extensions
         internal static IEnumerable<BaseValidator> GetValidatorsForProperty(this IEnumerable<BaseValidator> validators, PropertyInfo property)
         {
             var propertyType = property.PropertyType;
-            return validators.Where(x => !x.IgnoredProperties.Value.Contains(property) && x.TargetObjectType.Equals(propertyType));
+            return validators.Where(x => x.TargetObjectType.Equals(propertyType));
         }
 
         internal static bool HasValidatorForType(this IEnumerable<BaseValidator> validators, Type type)
@@ -29,7 +29,7 @@ namespace Sels.ObjectValidationFramework.Extensions
         internal static bool HasValidatorForProperty(this IEnumerable<BaseValidator> validators, PropertyInfo property)
         {
             var propertyType = property.PropertyType;
-            return validators.Any(x => !x.IgnoredProperties.Value.Contains(property) && x.TargetObjectType.Equals(propertyType));
+            return validators.Any(x => x.TargetObjectType.Equals(propertyType));
         }
     }
 }

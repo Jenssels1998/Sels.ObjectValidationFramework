@@ -10,9 +10,10 @@ namespace Sels.ObjectValidationFramework.TestTool.ValidationProfiles
     {
         public PersonValidationProfile() : base()
         {
+            IgnorePropertyForValidation<Person>(x => x.Parent);
+
             CreateValidator<Person>()
                 .IfNull(() => $"{nameof(Person)} cannot be null")
-                .IgnorePropertyForValidation(x => x.Parent)
                 .AddValidValidation(x => x.FirstName, x => x.HasValue(), (x,y) => $"Person {y.Id}: {nameof(Person.FirstName)} cannot be null or whitespace. Was<{x}>")
                 .AddValidValidation(x => x.LastName, x => x.HasValue(), (x, y) => $"Person {y.Id}: {nameof(Person.LastName)} cannot be null or whitespace. Was<{x}>")
                 .AddValidValidation(x => x.Age, x => x.HasValue(), (x, y) => $"Person {y.Id}: {nameof(Person.Age)} must be above 0. Was<{x}>")
@@ -21,8 +22,7 @@ namespace Sels.ObjectValidationFramework.TestTool.ValidationProfiles
                 .ConditionalValidation(x => x.Gender == Gender.Male, x =>
                 {
                     x.AddValidValidation(x => x.NickName, x => x.HasValue(), (x, y) => $"Person {y.Id}: {nameof(Person.NickName)} cannot be null or whitespace. Was<{x}>");
-                })
-                ;
+                });
             
                 
             

@@ -531,17 +531,6 @@ namespace Sels.ObjectValidationFramework
         #endregion
 
         #region Object
-        public static IValidator<TObject, TError> IgnorePropertiesForValidation<TObject, TError>(this IValidator<TObject, TError> validator, params Expression<Func<TObject, object>>[] properties)
-        {
-            properties.ValidateVariable(nameof(properties));
-
-            foreach(var property in properties)
-            {
-                validator.IgnorePropertyForValidation(property);
-            }
-
-            return validator;
-        }
 
         #endregion
     }

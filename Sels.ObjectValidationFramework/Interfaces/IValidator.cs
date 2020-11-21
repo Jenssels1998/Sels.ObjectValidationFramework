@@ -16,12 +16,6 @@ namespace Sels.ObjectValidationFramework
         /// <returns>Same instance of IValidator used to call this method</returns>
         IValidator<TObject, TError> AddCondition(Predicate<TObject> condition);
         /// <summary>
-        /// Ignores a property for validation. By default the ObjectValidator will check if any IValidators exist for the types on the properties and the underlying types on IEnumerable properties.
-        /// </summary>
-        /// <param name="property">Property that will be ignored</param>
-        /// <returns>Same instance of IValidator used to call this method</returns>
-        IValidator<TObject, TError> IgnorePropertyForValidation(Expression<Func<TObject, object>> property);
-        /// <summary>
         /// This error will be returned when the validator receives a null object
         /// </summary>
         /// <param name="nullMessage">Delegate that creates TError</param>
