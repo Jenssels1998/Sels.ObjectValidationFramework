@@ -10,7 +10,7 @@ namespace Sels.ObjectValidationFramework.TestTool.ValidationProfiles
     {
         public AnimalValidationProfile()
         {
-            IgnorePropertyForValidation<Animal>(x => x.Owner);
+            IgnorePropertyForFallThrough<Animal>(x => x.Owner);
 
             CreateValidator<Animal>()
                   .AddValidValidation(x => x.Age, x => x > 0, (x, y) => $"Animal: {nameof(Animal.Age)} must be above 0. Was<{x}>");

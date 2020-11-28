@@ -1,5 +1,7 @@
-﻿using Sels.Core.Extensions.General.Generic;
+﻿using Microsoft.Extensions.Logging;
+using Sels.Core.Extensions.General.Generic;
 using Sels.Core.Extensions.General.Validation;
+using Sels.Core.Extensions.Logging;
 using Sels.Core.Extensions.Reflection.Object;
 using Sels.Core.Extensions.Reflection.Types;
 using Sels.ObjectValidationFramework.Extensions;
@@ -38,7 +40,6 @@ namespace Sels.ObjectValidationFramework
             return errors;
         }
 
-
         private static IEnumerable<TError> ValidateObject<TError>(this ValidationProfile<TError> profile, object objectToValidate, Type objectType)
         {
             var errors = new List<TError>();
@@ -52,9 +53,22 @@ namespace Sels.ObjectValidationFramework
                 errors.AddRange(objectErrors);
             }
 
-            // Validate underlying types
-            errors.AddRange(profile.ValidatePropertyTypes<TError>(objectToValidate));
-                
+            if(objectToValidate != null)
+            {
+                // If we find a collection we look at the item type and see if we have a validator for it
+                if (objectType.IsItemContainer() && !objectType.IsString())
+                {
+                    var itemType = objectType.GetItemTypeFromContainer();
+                    // We have a validator for the item type. We now loop over the items in the collection and trigger validation
+                    foreach (var item in (IEnumerable)objectToValidate)
+                    {
+                        errors.AddRange(profile.ValidateObject<TError>(item, itemType));
+                    }
+                }
+
+                // Fallthrough properties
+                errors.AddRange(ValidatePropertyTypes(profile, objectToValidate));
+            }          
 
             return errors;
         }
@@ -64,37 +78,25 @@ namespace Sels.ObjectValidationFramework
             var errors = new List<TError>();
 
             if (objectToValidate == null) return errors;
+            if (profile.IsIgnored(objectToValidate.GetType())) return errors;
 
-            var validators = profile.Validators;
-
-            foreach(var property in objectToValidate.GetProperties())
+            foreach (var property in objectToValidate.GetProperties())
             {
-                if (profile.IsIgnored(property)) continue;
-
-                var propertyType = property.PropertyType;
-                var propertyValue = property.GetValue(objectToValidate);
-
-                if (propertyValue == null) continue;
-
-                // Validate underlying type
-                if (validators.HasValidatorForProperty(property))
+                try
                 {
-                    errors.AddRange(profile.ValidateObject<TError>(propertyValue, property.PropertyType));
+                    if (profile.IsIgnored(property)) continue;
+
+                    var propertyType = property.PropertyType;
+
+                    var propertyValue = property.GetValue(objectToValidate);
+
+                    // Validate underlying type
+                    errors.AddRange(profile.ValidateObject<TError>(propertyValue, propertyType));
                 }
-
-                // If we find a collection we look at the item type and see if we have a validator for it
-                if (propertyType.IsItemContainer())
+                catch(Exception ex)
                 {
-                    var itemType = propertyType.GetItemTypeFromContainer();
-                    if (validators.HasValidatorForType(itemType))
-                    {
-                        // We have a validator for the item type. We now loop over the items in the collection and trigger validation
-                        foreach (var item in (IEnumerable)propertyValue)
-                        {
-                            errors.AddRange(profile.ValidateObject<TError>(item, itemType));
-                        }                        
-                    }
-                }             
+                    profile.Logger.LogException(LogLevel.Warning, () => $"Could not fallthrough validate property <{property}> on object <{objectToValidate}>", ex);
+                }              
             }
 
             return errors;

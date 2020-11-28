@@ -11,7 +11,7 @@ namespace Sels.ObjectValidationFramework.TestTool.ValidationProfiles
     {
         public PersonValidationProfile() : base()
         {
-            IgnorePropertyForValidation<Person>(x => x.Parent);
+            IgnorePropertyForFallThrough<Person>(x => x.Parent);
 
             CreateValidator<Person>()
                 .IfNull(() => $"{nameof(Person)} cannot be null")

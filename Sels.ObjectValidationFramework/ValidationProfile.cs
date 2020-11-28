@@ -5,6 +5,7 @@ using Sels.Core.Extensions.General.Validation;
 using Sels.Core.Extensions.Logging;
 using Sels.Core.Extensions.Object.Time;
 using Sels.Core.Extensions.Reflection.Expressions;
+using Sels.Core.Extensions.Reflection;
 using Sels.Core.Extensions.Object.ItemContainer;
 using Sels.ObjectValidationFramework.Validator;
 using System;
@@ -15,6 +16,10 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
 using Sels.Core.Extensions.Reflection.Object;
+using System.Linq;
+using Sels.Core.Extensions.ReflectionExtensions;
+using Sels.Core.Extensions.Execution.Linq;
+using Sels.Core.Extensions.Reflection.Types;
 
 namespace Sels.ObjectValidationFramework
 {
@@ -30,17 +35,22 @@ namespace Sels.ObjectValidationFramework
         // Properties
         internal ReadOnlyCollection<BaseValidator> Validators => new ReadOnlyCollection<BaseValidator>(_validators);
         internal Dictionary<Type, List<PropertyInfo>> IgnoredProperties { get; } = new Dictionary<Type, List<PropertyInfo>>();
+        internal List<Predicate<Type>> IgnoredTypeCheckers { get; } = new List<Predicate<Type>>();
+        internal ILogger Logger => _logger;
 
-        public ValidationProfile()
+        public ValidationProfile() : this(new NullLoggerFactory())
         {
-            var factory = new NullLoggerFactory();
-            _logger = factory.CreateLogger(LogCategory);
         }
 
         public ValidationProfile(ILoggerFactory factory)
         {
             factory.ValidateVariable(nameof(factory));
             _logger = factory.CreateLogger(LogCategory);
+
+            // Add default ignored types
+            IgnoreTypeForFallThrough(x => x.IsPrimitive);
+            IgnoreTypeForFallThrough(typeof(string));
+            IgnoreTypeForFallThrough(x => x.IsItemContainer());
         }
 
         #region Validation Setup
@@ -73,6 +83,7 @@ namespace Sels.ObjectValidationFramework
 
             _validators.AddRange(profileInstance.Validators);
             IgnoredProperties.Merge(profileInstance.IgnoredProperties);
+            profileInstance.IgnoredTypeCheckers.Execute(x => IgnoreTypeForFallThrough(x));
         }
 
         /// <summary>
@@ -90,11 +101,11 @@ namespace Sels.ObjectValidationFramework
 
         #region Ignoring Properties
         /// <summary>
-        /// Ignores a property for validation. By default the ObjectValidator will check if any IValidators exist for the types on the properties and the underlying types on IEnumerable properties. 
+        /// Ignores a property for fallthrough validation. By default the ObjectValidator will check if any IValidators exist for the types on the properties. 
         /// </summary>
         /// <typeparam name="TObject">Object containing the property to ignore</typeparam>
         /// <param name="property">Property to ignore</param>
-        public void IgnorePropertyForValidation<TObject>(Expression<Func<TObject, object>> property)
+        public void IgnorePropertyForFallThrough<TObject>(Expression<Func<TObject, object>> property)
         {
             var propertyInfo = property.ExtractProperty(nameof(property));
             var objectType = typeof(TObject);
@@ -120,6 +131,40 @@ namespace Sels.ObjectValidationFramework
                         }
                     }
                 }
+            }
+
+            return false;
+        }
+        #endregion
+
+        #region Ignoring Types
+        /// <summary>
+        /// Ignores a type for fallthrough validation. By default the ObjectValidator will check if any IValidators exist for the types on the properties. 
+        /// </summary>
+        /// <param name="typeChecker">Delegate that checks if the type is ignored</param>
+        public void IgnoreTypeForFallThrough(Predicate<Type> typeChecker)
+        {
+            typeChecker.ValidateVariable(nameof(typeChecker));
+
+            IgnoredTypeCheckers.AddUnique(typeChecker);
+        }
+        /// <summary>
+        /// Ignores a type for fallthrough validation. By default the ObjectValidator will check if any IValidators exist for the types on the properties. 
+        /// </summary>
+        /// <param name="type">Type to be ignored</param>
+        public void IgnoreTypeForFallThrough(Type type)
+        {
+            type.ValidateVariable(nameof(type));
+            IgnoreTypeForFallThrough(x => type.IsAssignableFrom(x));
+        }
+
+        internal bool IsIgnored(Type type)
+        {
+            type.ValidateVariable(nameof(type));
+
+            if (IgnoredTypeCheckers.Any(typeChecker => typeChecker(type)))
+            {
+                return true;
             }
 
             return false;
