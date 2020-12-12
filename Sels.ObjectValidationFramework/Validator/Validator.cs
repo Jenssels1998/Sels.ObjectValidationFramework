@@ -128,7 +128,7 @@ namespace Sels.ObjectValidationFramework.Validator
                 }
                 catch (Exception ex)
                 {
-                    logger.EndLog(x => $"Could not add validation case Object({typeof(TObject)}) ({x.PrintTotalMs()})", ex);
+                    logger.EndLog((x, y) => y.LogException(LogLevel.Error, $"Could not add validation case Object({typeof(TObject)}) ({x.PrintTotalMs()})", ex));
                     throw;
                 }
             }
@@ -176,7 +176,7 @@ namespace Sels.ObjectValidationFramework.Validator
                 }
                 catch (Exception ex)
                 {
-                    logger.EndLog(x => $"Could not add validation case Object({typeof(TObject)}) ({x.PrintTotalMs()})", ex);
+                    logger.EndLog((x, y) => y.LogException(LogLevel.Error, $"Could not add validation case Object({typeof(TObject)}) ({x.PrintTotalMs()})", ex));
                     throw;
                 }
             }
@@ -211,7 +211,7 @@ namespace Sels.ObjectValidationFramework.Validator
                 }
                 catch (Exception ex)
                 {
-                    logger.EndLog(x => $"Could not add validation Object({typeof(TObject)}) ({x.PrintTotalMs()})", ex);
+                    logger.EndLog((x, y) => y.LogException(LogLevel.Error, $"Could not add validation Object({typeof(TObject)}) ({x.PrintTotalMs()})", ex));
                     throw;
                 }
             }

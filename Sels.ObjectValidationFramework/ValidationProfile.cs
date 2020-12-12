@@ -17,7 +17,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using Sels.Core.Extensions.Reflection.Object;
 using System.Linq;
-using Sels.Core.Extensions.ReflectionExtensions;
+using Sels.Core.Extensions.Reflection.Delegates;
 using Sels.Core.Extensions.Execution.Linq;
 using Sels.Core.Extensions.Reflection.Types;
 
