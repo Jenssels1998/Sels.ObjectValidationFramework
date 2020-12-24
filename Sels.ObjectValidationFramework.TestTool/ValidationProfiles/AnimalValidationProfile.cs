@@ -3,7 +3,7 @@ using Sels.ObjectValidationFramework.TestTool.Objects;
 using System;
 using System.Collections.Generic;
 using System.Text;
-using Sels.Core.Components.Display.PropertyLabel;
+using Sels.Core.Components.Display.ObjectLabel;
 
 namespace Sels.ObjectValidationFramework.TestTool.ValidationProfiles
 {
