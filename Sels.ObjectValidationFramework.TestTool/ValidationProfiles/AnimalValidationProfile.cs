@@ -3,6 +3,7 @@ using Sels.ObjectValidationFramework.TestTool.Objects;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using Sels.Core.Components.Display.PropertyLabel;
 
 namespace Sels.ObjectValidationFramework.TestTool.ValidationProfiles
 {
@@ -13,7 +14,7 @@ namespace Sels.ObjectValidationFramework.TestTool.ValidationProfiles
             IgnorePropertyForFallThrough<Animal>(x => x.Owner);
 
             CreateValidator<Animal>()
-                  .AddValidValidation(x => x.Age, x => x > 0, x => $"Animal: {nameof(Animal.Age)} must be above 0. Was<{x.PropertyValue}>");
+                  .AddValidValidation(x => x.Age, x => x > 0, x => $"Animal: {x.Property.GetLabel()} must be above 0. Was<{x.PropertyValue}>");
         }
     }
 }
