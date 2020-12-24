@@ -100,17 +100,17 @@ namespace Sels.ObjectValidationFramework.Validator
             return this;
         }
         #region Property
-        public IValidator<TObject, TError> AddValidValidation<TPropertyValue>(Expression<Func<TObject, TPropertyValue>> property, Predicate<TPropertyValue> propertyValueChecker, Func<TPropertyValue, TObject, TError> errorMessage)
+        public IValidator<TObject, TError> AddValidValidation<TPropertyValue>(Expression<Func<TObject, TPropertyValue>> property, Predicate<TPropertyValue> propertyValueChecker, Func<(TPropertyValue PropertyValue, PropertyInfo Property, TObject Object), TError> errorMessage)
         {
             return AddValidation(ValidationType.Valid, property, propertyValueChecker, errorMessage);
         }
 
-        public IValidator<TObject, TError> AddInvalidValidation<TPropertyValue>(Expression<Func<TObject, TPropertyValue>> property, Predicate<TPropertyValue> propertyValueChecker, Func<TPropertyValue, TObject, TError> errorMessage)
+        public IValidator<TObject, TError> AddInvalidValidation<TPropertyValue>(Expression<Func<TObject, TPropertyValue>> property, Predicate<TPropertyValue> propertyValueChecker, Func<(TPropertyValue PropertyValue, PropertyInfo Property, TObject Object), TError> errorMessage)
         {
             return AddValidation(ValidationType.Invalid, property, propertyValueChecker, errorMessage);
         }
 
-        public IValidator<TObject, TError> AddValidation<TPropertyValue>(ValidationType validationType, Expression<Func<TObject, TPropertyValue>> property, Predicate<TPropertyValue> propertyValueChecker, Func<TPropertyValue, TObject, TError> errorMessage)
+        public IValidator<TObject, TError> AddValidation<TPropertyValue>(ValidationType validationType, Expression<Func<TObject, TPropertyValue>> property, Predicate<TPropertyValue> propertyValueChecker, Func<(TPropertyValue PropertyValue, PropertyInfo Property, TObject Object), TError> errorMessage)
         {
             property.ValidateVariable(nameof(property));
             propertyValueChecker.ValidateVariable(nameof(propertyValueChecker));
@@ -138,17 +138,17 @@ namespace Sels.ObjectValidationFramework.Validator
         #endregion
 
         #region Property Collection
-        public IValidator<TObject, TError> AddValidCollectionValidation<TElement>(Expression<Func<TObject, IEnumerable<TElement>>> property, Predicate<TElement> elementValueChecker, Func<TElement, TObject, TError> errorMessage)
+        public IValidator<TObject, TError> AddValidCollectionValidation<TElement>(Expression<Func<TObject, IEnumerable<TElement>>> property, Predicate<TElement> elementValueChecker, Func<(TElement ElementValue, PropertyInfo Property, TObject Object), TError> errorMessage)
         {
             return AddCollectionValidation(ValidationType.Valid, property, elementValueChecker, errorMessage);
         }
 
-        public IValidator<TObject, TError> AddInvalidCollectionValidation<TElement>(Expression<Func<TObject, IEnumerable<TElement>>> property, Predicate<TElement> elementValueChecker, Func<TElement, TObject, TError> errorMessage)
+        public IValidator<TObject, TError> AddInvalidCollectionValidation<TElement>(Expression<Func<TObject, IEnumerable<TElement>>> property, Predicate<TElement> elementValueChecker, Func<(TElement ElementValue, PropertyInfo Property, TObject Object), TError> errorMessage)
         {
             return AddCollectionValidation(ValidationType.Invalid, property, elementValueChecker, errorMessage);
         }
 
-        public IValidator<TObject, TError> AddCollectionValidation<TElement>(ValidationType validationType, Expression<Func<TObject, IEnumerable<TElement>>> property, Predicate<TElement> elementValueChecker, Func<TElement, TObject, TError> errorMessage)
+        public IValidator<TObject, TError> AddCollectionValidation<TElement>(ValidationType validationType, Expression<Func<TObject, IEnumerable<TElement>>> property, Predicate<TElement> elementValueChecker, Func<(TElement ElementValue, PropertyInfo Property, TObject Object), TError> errorMessage)
         {
             property.ValidateVariable(nameof(property));
             elementValueChecker.ValidateVariable(nameof(elementValueChecker));

@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
+using System.Reflection;
 using System.Text;
 
 namespace Sels.ObjectValidationFramework
@@ -17,7 +18,7 @@ namespace Sels.ObjectValidationFramework
         /// <param name="propertyValueChecker">Checks state of TPropertyValue</param>
         /// <param name="errorMessage">Delegate that creates TError when validation fails</param>
         /// <returns>Same instance of IValidator used to call this method</returns>
-        IValidator<TObject, TError> AddValidValidation<TPropertyValue>(Expression<Func<TObject, TPropertyValue>> property, Predicate<TPropertyValue> propertyValueChecker, Func<TPropertyValue, TObject, TError> errorMessage);
+        IValidator<TObject, TError> AddValidValidation<TPropertyValue>(Expression<Func<TObject, TPropertyValue>> property, Predicate<TPropertyValue> propertyValueChecker, Func<(TPropertyValue PropertyValue, PropertyInfo Property, TObject Object), TError> errorMessage);
         /// <summary>
         /// Sets up validation on a property of TObject. Error message is created when propertyValueChecker returns true.
         /// </summary>
@@ -26,7 +27,7 @@ namespace Sels.ObjectValidationFramework
         /// <param name="propertyValueChecker">Checks state of TPropertyValue</param>
         /// <param name="errorMessage">Delegate that creates TError when validation fails</param>
         /// <returns>Same instance of IValidator used to call this method</returns>
-        IValidator<TObject, TError> AddInvalidValidation<TPropertyValue>(Expression<Func<TObject, TPropertyValue>> property, Predicate<TPropertyValue> propertyValueChecker, Func<TPropertyValue, TObject, TError> errorMessage);
+        IValidator<TObject, TError> AddInvalidValidation<TPropertyValue>(Expression<Func<TObject, TPropertyValue>> property, Predicate<TPropertyValue> propertyValueChecker, Func<(TPropertyValue PropertyValue, PropertyInfo Property, TObject Object), TError> errorMessage);
         /// <summary>
         /// Sets up validation on a property of TObject. Error message is created when validationType is Valid and propertyValueChecker returns false OR when validationType is Invalid and propertyValueChecker returns true.
         /// </summary>
@@ -38,7 +39,7 @@ namespace Sels.ObjectValidationFramework
         /// <returns>Same instance of IValidator used to call this method</returns>
         /// <returns></returns>
 
-        IValidator<TObject, TError> AddValidation<TPropertyValue>(ValidationType validationType, Expression<Func<TObject, TPropertyValue>> property, Predicate<TPropertyValue> propertyValueChecker, Func<TPropertyValue, TObject, TError> errorMessage);
+        IValidator<TObject, TError> AddValidation<TPropertyValue>(ValidationType validationType, Expression<Func<TObject, TPropertyValue>> property, Predicate<TPropertyValue> propertyValueChecker, Func<(TPropertyValue PropertyValue, PropertyInfo Property, TObject Object), TError> errorMessage);
         #endregion
 
         #region Collection Property
@@ -50,7 +51,7 @@ namespace Sels.ObjectValidationFramework
         /// <param name="elementValueChecker">Checks state of TElement</param>
         /// <param name="errorMessage">Delegate that creates TError when validation fails</param>
         /// <returns>Same instance of IValidator used to call this method</returns>
-        IValidator<TObject, TError> AddValidCollectionValidation<TElement>(Expression<Func<TObject, IEnumerable<TElement>>> property, Predicate<TElement> elementValueChecker, Func<TElement, TObject, TError> errorMessage);
+        IValidator<TObject, TError> AddValidCollectionValidation<TElement>(Expression<Func<TObject, IEnumerable<TElement>>> property, Predicate<TElement> elementValueChecker, Func<(TElement ElementValue, PropertyInfo Property, TObject Object), TError> errorMessage);
         /// <summary>
         /// Sets up validation on a IEnumerable<> property of TObject. Error message is created when elementValueChecker returns true.
         /// </summary>
@@ -59,7 +60,7 @@ namespace Sels.ObjectValidationFramework
         /// <param name="elementValueChecker">Checks state of TElement</param>
         /// <param name="errorMessage">Delegate that creates TError when validation fails</param>
         /// <returns>Same instance of IValidator used to call this method</returns>
-        IValidator<TObject, TError> AddInvalidCollectionValidation<TElement>(Expression<Func<TObject, IEnumerable<TElement>>> property, Predicate<TElement> elementValueChecker, Func<TElement, TObject, TError> errorMessage);
+        IValidator<TObject, TError> AddInvalidCollectionValidation<TElement>(Expression<Func<TObject, IEnumerable<TElement>>> property, Predicate<TElement> elementValueChecker, Func<(TElement ElementValue, PropertyInfo Property, TObject Object), TError> errorMessage);
         /// <summary>
         /// Sets up validation on a IEnumerable<> property of TObject. Error message is created when validationType is Valid and elementValueChecker returns false OR when validationType is Invalid and propertyValueChecker returns true.
         /// </summary>
@@ -69,7 +70,7 @@ namespace Sels.ObjectValidationFramework
         /// <param name="elementValueChecker">Checks state of TElement</param>
         /// <param name="errorMessage">Delegate that creates TError when validation fails</param>
         /// <returns></returns>
-        IValidator<TObject, TError> AddCollectionValidation<TElement>(ValidationType validationType, Expression<Func<TObject, IEnumerable<TElement>>> property, Predicate<TElement> elementValueChecker, Func<TElement, TObject, TError> errorMessage);
+        IValidator<TObject, TError> AddCollectionValidation<TElement>(ValidationType validationType, Expression<Func<TObject, IEnumerable<TElement>>> property, Predicate<TElement> elementValueChecker, Func<(TElement ElementValue, PropertyInfo Property, TObject Object), TError> errorMessage);
         #endregion
 
         #region Object

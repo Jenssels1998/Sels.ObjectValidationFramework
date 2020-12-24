@@ -17,13 +17,13 @@ namespace Sels.ObjectValidationFramework.Validator.Property.Collection
     internal class CollectionPropertyValidationExecutor<TObject, TElement, TError> : BasePropertyValidationExecutor<TObject>
     {
         // Fields
-        private readonly List<(Predicate<TElement> ElementValueChecker, Func<TElement, TObject, TError> ErrorMessage)> _validatorExecutors = new List<(Predicate<TElement> ElementValueChecker, Func<TElement, TObject, TError> ErrorMessage)>();
+        private readonly List<(Predicate<TElement> ElementValueChecker, Func<(TElement ElementValue, PropertyInfo Property, TObject Object), TError> ErrorMessage)> _validatorExecutors = new List<(Predicate<TElement> ElementValueChecker, Func<(TElement ElementValue, PropertyInfo Property, TObject Object), TError> ErrorMessage)>();
 
         // Properties
         internal override PropertyInfo TargetProperty { get; }
          internal override Delegate ValidateDelegate { get; }
 
-        internal CollectionPropertyValidationExecutor(PropertyInfo property, (Predicate<TElement> ElementValueChecker, Func<TElement, TObject, TError> ErrorMessage) validatorExecutor, ValidationType validationType, Predicate<TObject> condition, ILogger logger) : base(validationType, condition, logger)
+        internal CollectionPropertyValidationExecutor(PropertyInfo property, (Predicate<TElement> ElementValueChecker, Func<(TElement ElementValue, PropertyInfo Property, TObject Object), TError> ErrorMessage) validatorExecutor, ValidationType validationType, Predicate<TObject> condition, ILogger logger) : base(validationType, condition, logger)
         {
             property.ValidateVariable(x => x.PropertyType.IsTypedEnumerable(), x => $"Property must be of type IEnumerable<{typeof(TElement)}>. Type was <{x.PropertyType}>");
 
@@ -34,7 +34,7 @@ namespace Sels.ObjectValidationFramework.Validator.Property.Collection
             ValidateDelegate = this.CreateDelegateForMethod(nameof(Validate));
         }
 
-        internal void AddValidatorExecutor((Predicate<TElement> ElementValueChecker, Func<TElement, TObject, TError> ErrorMessage) validatorExecutor)
+        internal void AddValidatorExecutor((Predicate<TElement> ElementValueChecker, Func<(TElement ElementValue, PropertyInfo Property, TObject Object), TError> ErrorMessage) validatorExecutor)
         {
             validatorExecutor.ValidateVariable(nameof(validatorExecutor));
             validatorExecutor.ElementValueChecker.ValidateVariable(nameof(validatorExecutor.ElementValueChecker));
@@ -64,7 +64,7 @@ namespace Sels.ObjectValidationFramework.Validator.Property.Collection
                     else
                     {
                         _logger.LogObject<JsonProvider>(LogLevel.Debug, () => $"Element in Property {TargetProperty.Name} on Type {TargetProperty.ReflectedType} did not pass validation (ValidationType {ValidationType}). Was:", item);
-                        errors.Add(executor.ErrorMessage(item, parentObject));
+                        errors.Add(executor.ErrorMessage((item, TargetProperty, parentObject)));
                     }
                 }    
             }

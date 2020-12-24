@@ -14,7 +14,7 @@ namespace Sels.ObjectValidationFramework.Validator.Case
     internal class PropertyValidationExecutor<TObject, TPropertyValue, TError> : BasePropertyValidationExecutor<TObject>
     {
         // Fields       
-        private readonly Func<TPropertyValue, TObject, TError> _errorMessage;
+        private readonly Func<(TPropertyValue PropertyValue, PropertyInfo Property, TObject Object), TError> _errorMessage;
         private readonly Predicate<TPropertyValue> _propertyValueChecker;
         
 
@@ -22,7 +22,7 @@ namespace Sels.ObjectValidationFramework.Validator.Case
         internal override PropertyInfo TargetProperty { get; }
         internal override Delegate ValidateDelegate { get; }
 
-        internal PropertyValidationExecutor(PropertyInfo property, Predicate<TPropertyValue> propertyValueChecker, Func<TPropertyValue, TObject, TError> errorMessage, ValidationType validationType, Predicate<TObject> condition, ILogger logger) : base(validationType, condition, logger)
+        internal PropertyValidationExecutor(PropertyInfo property, Predicate<TPropertyValue> propertyValueChecker, Func<(TPropertyValue PropertyValue, PropertyInfo Property, TObject Object), TError> errorMessage, ValidationType validationType, Predicate<TObject> condition, ILogger logger) : base(validationType, condition, logger)
         {
             propertyValueChecker.ValidateVariable(nameof(propertyValueChecker));
             errorMessage.ValidateVariable(nameof(errorMessage));
@@ -52,7 +52,7 @@ namespace Sels.ObjectValidationFramework.Validator.Case
             else
             {
                 _logger.LogObject<JsonProvider>(LogLevel.Debug, () => $"Property {TargetProperty.Name} on Type {TargetProperty.ReflectedType} did not pass validation (ValidationType {ValidationType}). Was:", propertyValue);
-                error = _errorMessage(propertyValue, parentObject);
+                error = _errorMessage((propertyValue, TargetProperty, parentObject));
                 return (true, error);
             }
         }

@@ -110,7 +110,7 @@ namespace Sels.ObjectValidationFramework
             var propertyInfo = property.ExtractProperty(nameof(property));
             var objectType = typeof(TObject);
 
-            IgnoredProperties.AddValue(objectType, propertyInfo);
+            IgnoredProperties.AddValueToList(objectType, propertyInfo);
         }
 
         internal bool IsIgnored(PropertyInfo property)
