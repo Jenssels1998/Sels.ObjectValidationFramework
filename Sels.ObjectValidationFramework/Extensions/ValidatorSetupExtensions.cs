@@ -1,9 +1,12 @@
 ﻿using Sels.Core.Extensions.General.Generic;
 using Sels.Core.Extensions.General.Validation;
+using Sels.Core.Extensions.Io.FileSystem;
 using Sels.Core.Extensions.Object.ItemContainer;
 using Sels.Core.Extensions.Object.String;
+using Sels.Core.Extensions.Object.Time;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -146,37 +149,72 @@ namespace Sels.ObjectValidationFramework
 
         public static IValidator<TObject, TError> MustBeInPast<TObject, TError>(this IValidatorSetup<TObject, TError> validator, Expression<Func<TObject, DateTime>> property, Func<(DateTime PropertyValue, PropertyInfo Property, TObject Object), TError> errorMessage)
         {
-            return validator.AddValidValidation(property, x => x < DateTime.Now && (DateTime.Now.DayOfYear != x.DayOfYear && DateTime.Now.Year != x.Year), errorMessage);
+            return validator.AddValidValidation(property, x => x.IsInPast() && !x.IsToday(), errorMessage);
         }
 
         public static IValidator<TObject, TError> MustBeInFuture<TObject, TError>(this IValidatorSetup<TObject, TError> validator, Expression<Func<TObject, DateTime>> property, Func<(DateTime PropertyValue, PropertyInfo Property, TObject Object), TError> errorMessage)
         {
-            return validator.AddValidValidation(property, x => x > DateTime.Now && (DateTime.Now.DayOfYear != x.DayOfYear && DateTime.Now.Year != x.Year), errorMessage);
+            return validator.AddValidValidation(property, x => x.IsInFuture() && !x.IsToday(), errorMessage);
         }
 
         public static IValidator<TObject, TError> MustBeTodayOrInPast<TObject, TError>(this IValidatorSetup<TObject, TError> validator, Expression<Func<TObject, DateTime>> property, Func<(DateTime PropertyValue, PropertyInfo Property, TObject Object), TError> errorMessage)
         {
-            return validator.AddValidValidation(property, x => x <= DateTime.Now || (DateTime.Now.DayOfYear == x.DayOfYear && DateTime.Now.Year == x.Year), errorMessage);
+            return validator.AddValidValidation(property, x => x.IsInPast() || x.IsToday(), errorMessage);
         }
 
         public static IValidator<TObject, TError> MustBeTodayOrInFuture<TObject, TError>(this IValidatorSetup<TObject, TError> validator, Expression<Func<TObject, DateTime>> property, Func<(DateTime PropertyValue, PropertyInfo Property, TObject Object), TError> errorMessage)
         {
-            return validator.AddValidValidation(property, x => x <= DateTime.Now || (DateTime.Now.DayOfYear == x.DayOfYear && DateTime.Now.Year == x.Year), errorMessage);
+            return validator.AddValidValidation(property, x => x.IsInFuture() || x.IsToday(), errorMessage);
         }
 
         public static IValidator<TObject, TError> MustBeToday<TObject, TError>(this IValidatorSetup<TObject, TError> validator, Expression<Func<TObject, DateTime>> property, Func<(DateTime PropertyValue, PropertyInfo Property, TObject Object), TError> errorMessage)
         {
-            return validator.AddValidValidation(property, x => x.ToString(DateFormat).Equals(DateTime.Now.ToString(DateFormat)), errorMessage);
+            return validator.AddValidValidation(property, x => x.IsToday(), errorMessage);
         }
 
         public static IValidator<TObject, TError> MustBeTomorrow<TObject, TError>(this IValidatorSetup<TObject, TError> validator, Expression<Func<TObject, DateTime>> property, Func<(DateTime PropertyValue, PropertyInfo Property, TObject Object), TError> errorMessage)
         {
             return validator.AddValidValidation(property, x => x.ToString(DateFormat).Equals(DateTime.Now.AddDays(1).ToString(DateFormat)), errorMessage);
         }
-
         public static IValidator<TObject, TError> MustBeBetween<TObject, TError>(this IValidatorSetup<TObject, TError> validator, Expression<Func<TObject, DateTime>> property, DateTime minDate, DateTime maxDate, Func<(DateTime PropertyValue, PropertyInfo Property, TObject Object), TError> errorMessage)
         {
             return validator.AddValidValidation(property, x => x >= minDate && x <= maxDate, errorMessage);
+        }
+
+
+        public static IValidator<TObject, TError> MustBeInPast<TObject, TError>(this IValidatorSetup<TObject, TError> validator, Expression<Func<TObject, DateTime?>> property, Func<(DateTime? PropertyValue, PropertyInfo Property, TObject Object), TError> errorMessage)
+        {
+            return validator.AddValidValidation(property, x => x.HasValue && x.Value.IsInPast() && !x.Value.IsToday(), errorMessage);
+        }
+
+        public static IValidator<TObject, TError> MustBeInFuture<TObject, TError>(this IValidatorSetup<TObject, TError> validator, Expression<Func<TObject, DateTime?>> property, Func<(DateTime? PropertyValue, PropertyInfo Property, TObject Object), TError> errorMessage)
+        {
+            return validator.AddValidValidation(property, x => x.HasValue && x.Value.IsInFuture() && !x.Value.IsToday(), errorMessage);
+        }
+
+        public static IValidator<TObject, TError> MustBeTodayOrInPast<TObject, TError>(this IValidatorSetup<TObject, TError> validator, Expression<Func<TObject, DateTime?>> property, Func<(DateTime? PropertyValue, PropertyInfo Property, TObject Object), TError> errorMessage)
+        {
+            return validator.AddValidValidation(property, x => x.HasValue && x.Value.IsInPast() || x.Value.IsToday(), errorMessage);
+        }
+
+        public static IValidator<TObject, TError> MustBeTodayOrInFuture<TObject, TError>(this IValidatorSetup<TObject, TError> validator, Expression<Func<TObject, DateTime?>> property, Func<(DateTime? PropertyValue, PropertyInfo Property, TObject Object), TError> errorMessage)
+        {
+            return validator.AddValidValidation(property, x => x.HasValue && x.Value.IsInFuture() || x.Value.IsToday(), errorMessage);
+        }
+
+        public static IValidator<TObject, TError> MustBeToday<TObject, TError>(this IValidatorSetup<TObject, TError> validator, Expression<Func<TObject, DateTime?>> property, Func<(DateTime? PropertyValue, PropertyInfo Property, TObject Object), TError> errorMessage)
+        {
+            return validator.AddValidValidation(property, x => x.HasValue && x.Value.IsToday(), errorMessage);
+        }
+
+        public static IValidator<TObject, TError> MustBeTomorrow<TObject, TError>(this IValidatorSetup<TObject, TError> validator, Expression<Func<TObject, DateTime?>> property, Func<(DateTime? PropertyValue, PropertyInfo Property, TObject Object), TError> errorMessage)
+        {
+            return validator.AddValidValidation(property, x => x.HasValue && x.Value.ToString(DateFormat).Equals(DateTime.Now.AddDays(1).ToString(DateFormat)), errorMessage);
+        }
+
+        public static IValidator<TObject, TError> MustBeBetween<TObject, TError>(this IValidatorSetup<TObject, TError> validator, Expression<Func<TObject, DateTime?>> property, DateTime minDate, DateTime maxDate, Func<(DateTime? PropertyValue, PropertyInfo Property, TObject Object), TError> errorMessage)
+        {
+            return validator.AddValidValidation(property, x => x.HasValue && x.Value >= minDate && x.Value <= maxDate, errorMessage);
         }
         #endregion
         #region Numeric
@@ -321,6 +359,32 @@ namespace Sels.ObjectValidationFramework
         public static IValidator<TObject, TError> AllElementsMustBeUnique<TObject, TElement, TError>(this IValidatorSetup<TObject, TError> validator, Expression<Func<TObject, IEnumerable<TElement>>> property, Func<(IEnumerable<TElement> PropertyValue, PropertyInfo Property, TObject Object), TError> errorMessage)
         {
             return validator.AddValidValidation(property, x => x.AreAllUnique(), errorMessage);
+        }
+        #endregion
+        #region IO 
+        public static IValidator<TObject, TError> MustExistAndCannotBeNull<TObject, TError>(this IValidatorSetup<TObject, TError> validator, Expression<Func<TObject, FileSystemInfo>> property, Func<(FileSystemInfo PropertyValue, PropertyInfo Property, TObject Object), TError> errorMessage)
+        {
+            return validator.AddInvalidValidation(property, x => x == null || !x .Exists, errorMessage);
+        }
+
+        public static IValidator<TObject, TError> IsValidFileName<TObject, TError>(this IValidatorSetup<TObject, TError> validator, Expression<Func<TObject, string>> property, Func<(string PropertyValue, PropertyInfo Property, TObject Object), TError> errorMessage)
+        {
+            return validator.AddValidValidation(property, x => File.Exists(x), errorMessage);
+        }
+
+        public static IValidator<TObject, TError> IsValidDirectory<TObject, TError>(this IValidatorSetup<TObject, TError> validator, Expression<Func<TObject, string>> property, Func<(string PropertyValue, PropertyInfo Property, TObject Object), TError> errorMessage)
+        {
+            return validator.AddValidValidation(property, x => Directory.Exists(x), errorMessage);
+        }
+
+        public static IValidator<TObject, TError> FileCanBeOpened<TObject, TError>(this IValidatorSetup<TObject, TError> validator, Expression<Func<TObject, FileInfo>> property, Func<(FileInfo PropertyValue, PropertyInfo Property, TObject Object), TError> errorMessage)
+        {
+            return validator.AddValidValidation(property, x => !x.Exists || !x.IsLocked(), errorMessage);
+        }
+
+        public static IValidator<TObject, TError> FileCanBeOpened<TObject, TError>(this IValidatorSetup<TObject, TError> validator, Expression<Func<TObject, string>> property, Func<(string PropertyValue, PropertyInfo Property, TObject Object), TError> errorMessage)
+        {
+            return validator.AddValidValidation(property, x => { var file = new FileInfo(x); return !file.Exists || !file.IsLocked(); }, errorMessage);
         }
         #endregion
         #endregion
@@ -540,7 +604,6 @@ namespace Sels.ObjectValidationFramework
         }
         #endregion
         #endregion
-
         #region Object
 
         #endregion

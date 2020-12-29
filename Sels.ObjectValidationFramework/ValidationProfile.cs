@@ -51,6 +51,7 @@ namespace Sels.ObjectValidationFramework
             IgnoreTypeForFallThrough(x => x.IsPrimitive);
             IgnoreTypeForFallThrough(typeof(string));
             IgnoreTypeForFallThrough(x => x.IsItemContainer());
+            IgnoreTypeForFallThrough(typeof(DateTime));
         }
 
         #region Validation Setup

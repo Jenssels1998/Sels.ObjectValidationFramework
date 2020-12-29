@@ -99,6 +99,7 @@ namespace Sels.ObjectValidationFramework.Validator
 
             return this;
         }
+
         #region Property
         public IValidator<TObject, TError> AddValidValidation<TPropertyValue>(Expression<Func<TObject, TPropertyValue>> property, Predicate<TPropertyValue> propertyValueChecker, Func<(TPropertyValue PropertyValue, PropertyInfo Property, TObject Object), TError> errorMessage)
         {
