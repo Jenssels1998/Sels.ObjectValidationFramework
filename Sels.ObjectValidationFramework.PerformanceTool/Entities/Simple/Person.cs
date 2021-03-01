@@ -1,4 +1,4 @@
-﻿using Sels.Core.Extensions.Object.Time;
+﻿using Sels.Core.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Text;

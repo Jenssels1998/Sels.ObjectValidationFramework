@@ -1,6 +1,5 @@
 ﻿using Sels.Core.Components.Console;
-using Sels.Core.Extensions.General.Generic;
-using Sels.Core.Extensions.Object.String;
+using Sels.Core.Extensions;
 using Sels.ObjectValidationFramework.TestTool.Objects;
 using Sels.ObjectValidationFramework.TestTool.ValidationProfiles;
 using System;
@@ -67,11 +66,11 @@ namespace Sels.ObjectValidationFramework.TestTool
 
                 var validErrors = ObjectValidator.Validate(profile, validPerson);
 
-                Console.WriteLine($"Errors on valid person: {Environment.NewLine}{(validErrors.HasValue() ? validErrors.JoinNewLine() : "None")}");
+                Console.WriteLine($"Errors on valid person: {Environment.NewLine}{(validErrors.HasValue() ? validErrors.JoinStringNewLine() : "None")}");
 
                 var inValidErrors = ObjectValidator.Validate(profile, inValidPerson);
 
-                Console.WriteLine($"Errors on invalid person: {Environment.NewLine}{(inValidErrors.HasValue() ? inValidErrors.JoinNewLine() : "None")}");
+                Console.WriteLine($"Errors on invalid person: {Environment.NewLine}{(inValidErrors.HasValue() ? inValidErrors.JoinStringNewLine() : "None")}");
 
             });
         }

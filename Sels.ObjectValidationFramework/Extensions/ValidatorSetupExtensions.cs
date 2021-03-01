@@ -1,9 +1,7 @@
-﻿using Sels.Core.Extensions.General.Generic;
-using Sels.Core.Extensions.General.Validation;
-using Sels.Core.Extensions.Io.FileSystem;
-using Sels.Core.Extensions.Object.ItemContainer;
-using Sels.Core.Extensions.Object.String;
-using Sels.Core.Extensions.Object.Time;
+﻿using Sels.Core;
+using Sels.Core.Extensions;
+using Sels.Core.Extensions.Reflection;
+using Sels.Core.Extensions.Io;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -367,7 +365,7 @@ namespace Sels.ObjectValidationFramework
             return validator.AddInvalidValidation(property, x => x == null || !x .Exists, errorMessage);
         }
 
-        public static IValidator<TObject, TError> IsValidFileName<TObject, TError>(this IValidatorSetup<TObject, TError> validator, Expression<Func<TObject, string>> property, Func<(string PropertyValue, PropertyInfo Property, TObject Object), TError> errorMessage)
+        public static IValidator<TObject, TError> IsValidFile<TObject, TError>(this IValidatorSetup<TObject, TError> validator, Expression<Func<TObject, string>> property, Func<(string PropertyValue, PropertyInfo Property, TObject Object), TError> errorMessage)
         {
             return validator.AddValidValidation(property, x => File.Exists(x), errorMessage);
         }
@@ -385,6 +383,16 @@ namespace Sels.ObjectValidationFramework
         public static IValidator<TObject, TError> FileCanBeOpened<TObject, TError>(this IValidatorSetup<TObject, TError> validator, Expression<Func<TObject, string>> property, Func<(string PropertyValue, PropertyInfo Property, TObject Object), TError> errorMessage)
         {
             return validator.AddValidValidation(property, x => { var file = new FileInfo(x); return !file.Exists || !file.IsLocked(); }, errorMessage);
+        }
+
+        public static IValidator<TObject, TError> IsValidDirectoryPath<TObject, TError>(this IValidatorSetup<TObject, TError> validator, Expression<Func<TObject, string>> property, Func<(string PropertyValue, PropertyInfo Property, TObject Object), TError> errorMessage)
+        {
+            return validator.AddValidValidation(property, x => Helper.FileSystem.IsValidDirectoryPath(x), errorMessage);
+        }
+
+        public static IValidator<TObject, TError> IsValidFileName<TObject, TError>(this IValidatorSetup<TObject, TError> validator, Expression<Func<TObject, string>> property, Func<(string PropertyValue, PropertyInfo Property, TObject Object), TError> errorMessage)
+        {
+            return validator.AddValidValidation(property, x => Helper.FileSystem.IsValidFileName(x), errorMessage);
         }
         #endregion
         #endregion

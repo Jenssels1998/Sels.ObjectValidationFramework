@@ -1,6 +1,5 @@
 ﻿using Sels.Core.Components.Performance;
-using Sels.Core.Extensions.General.Generic;
-using Sels.Core.Extensions.Object.String;
+using Sels.Core.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Dynamic;
@@ -39,7 +38,7 @@ namespace Sels.ObjectValidationFramework.PerformanceTool.PerformanceCase
 
             CaseCleanup = x =>
             {
-                if(_verbose) Console.WriteLine($"Errors: {(errors.HasValue() ? errors.JoinNewLine() : "None")}");
+                if(_verbose) Console.WriteLine($"Errors: {(errors.HasValue() ? errors.JoinStringNewLine() : "None")}");
             };
         }
     }

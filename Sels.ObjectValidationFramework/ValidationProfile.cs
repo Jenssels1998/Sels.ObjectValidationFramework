@@ -1,12 +1,9 @@
 ﻿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Sels.Core.Components.Caching;
-using Sels.Core.Extensions.General.Validation;
+using Sels.Core.Extensions;
 using Sels.Core.Extensions.Logging;
-using Sels.Core.Extensions.Object.Time;
-using Sels.Core.Extensions.Reflection.Expressions;
 using Sels.Core.Extensions.Reflection;
-using Sels.Core.Extensions.Object.ItemContainer;
 using Sels.ObjectValidationFramework.Validator;
 using System;
 using System.Collections.Generic;
@@ -15,11 +12,7 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
-using Sels.Core.Extensions.Reflection.Object;
 using System.Linq;
-using Sels.Core.Extensions.Reflection.Delegates;
-using Sels.Core.Extensions.Execution.Linq;
-using Sels.Core.Extensions.Reflection.Types;
 
 namespace Sels.ObjectValidationFramework
 {
@@ -28,11 +21,15 @@ namespace Sels.ObjectValidationFramework
         // Constants
         private const string LogCategory = "ObjectValidationFramework";
 
+        private const string IgnoreSystemString = "System";
+        private const string IgnoreMicrosoftString = "Microsoft";
+
         // Fields
         private ILogger _logger;
         private readonly List<BaseValidator> _validators = new List<BaseValidator>();
 
         // Properties
+        public bool FallThroughProperties { get; set; }
         internal ReadOnlyCollection<BaseValidator> Validators => new ReadOnlyCollection<BaseValidator>(_validators);
         internal Dictionary<Type, List<PropertyInfo>> IgnoredProperties { get; } = new Dictionary<Type, List<PropertyInfo>>();
         internal List<Predicate<Type>> IgnoredTypeCheckers { get; } = new List<Predicate<Type>>();
@@ -40,6 +37,7 @@ namespace Sels.ObjectValidationFramework
 
         public ValidationProfile() : this(new NullLoggerFactory())
         {
+
         }
 
         public ValidationProfile(ILoggerFactory factory)
@@ -49,9 +47,13 @@ namespace Sels.ObjectValidationFramework
 
             // Add default ignored types
             IgnoreTypeForFallThrough(x => x.IsPrimitive);
-            IgnoreTypeForFallThrough(typeof(string));
             IgnoreTypeForFallThrough(x => x.IsItemContainer());
-            IgnoreTypeForFallThrough(typeof(DateTime));
+
+            // Ignore all system / microsoft types
+            IgnoreTypeForFallThrough(x => x.FullName.StartsWith(IgnoreSystemString));
+            IgnoreTypeForFallThrough(x => x.FullName.StartsWith(IgnoreMicrosoftString));
+
+            FallThroughProperties = true;
         }
 
         #region Validation Setup
@@ -119,6 +121,11 @@ namespace Sels.ObjectValidationFramework
             property.ValidateVariable(nameof(property));
 
             var parentType = property.DeclaringType;
+
+            // Check if type is ignored
+            if (IsIgnored(property.PropertyType)) {
+                return true;
+            };
 
             foreach(var pair in IgnoredProperties)
             {

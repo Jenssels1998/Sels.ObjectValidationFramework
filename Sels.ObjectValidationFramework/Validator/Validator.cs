@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
-using Sels.Core.Extensions.General.Validation;
+using Sels.Core.Extensions;
 using Sels.Core.Extensions.Logging;
-using Sels.Core.Extensions.Object.Time;
+using Sels.Core.Extensions;
 using Sels.ObjectValidationFramework.Validator.Case;
 using System;
 using System.Collections.Generic;
@@ -10,13 +10,13 @@ using System.Text;
 using Sels.Core.Components.Caching;
 using System.Collections.ObjectModel;
 using System.Reflection;
-using Sels.Core.Extensions.Reflection.Object;
-using Sels.Core.Extensions.General.Generic;
+using Sels.Core.Extensions.Reflection;
+using Sels.Core.Extensions;
 using System.Linq;
-using Sels.Core.Extensions.Reflection.Expressions;
+using Sels.Core.Extensions.Reflection;
 using Sels.Core.Components.Variable.Actions;
 using Sels.ObjectValidationFramework.Validator.Object;
-using Sels.Core.Extensions.Execution.Linq;
+using Sels.Core.Extensions;
 using Sels.ObjectValidationFramework.Validator.Property.Collection;
 
 namespace Sels.ObjectValidationFramework.Validator

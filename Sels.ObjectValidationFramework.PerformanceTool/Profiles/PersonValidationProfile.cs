@@ -1,4 +1,4 @@
-﻿using Sels.Core.Extensions.General.Generic;
+﻿using Sels.Core.Extensions;
 using Sels.ObjectValidationFramework.PerformanceTool.Entities.Simple;
 using System;
 using System.Collections.Generic;

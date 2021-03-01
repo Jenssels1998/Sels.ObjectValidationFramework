@@ -1,9 +1,9 @@
 ﻿using Microsoft.Extensions.Logging;
-using Sels.Core.Extensions.General.Generic;
-using Sels.Core.Extensions.General.Validation;
+using Sels.Core.Extensions;
+using Sels.Core.Extensions;
 using Sels.Core.Extensions.Logging;
-using Sels.Core.Extensions.Reflection.Object;
-using Sels.Core.Extensions.Reflection.Types;
+using Sels.Core.Extensions.Reflection;
+using Sels.Core.Extensions.Reflection;
 using Sels.ObjectValidationFramework.Extensions;
 using Sels.ObjectValidationFramework.Validator;
 using Sels.ObjectValidationFramework.Validator.Case;
@@ -19,30 +19,38 @@ namespace Sels.ObjectValidationFramework
 {
     public static class ObjectValidator
     {
-        public static IEnumerable<TError> Validate<TObject, TError>(ValidationProfile<TError> profile, TObject objectToValidate)
+        public static IEnumerable<TError> Validate<TError>(ValidationProfile<TError> profile, object objectToValidate, Type objectType = null)
         {
             profile.ValidateVariable(nameof(profile));
 
-            var objectType = typeof(TObject);
+            if(objectToValidate == null && objectType == null)
+            {
+                profile.Logger.LogMessage(LogLevel.Warning, $"Could not validate object because {nameof(objectToValidate)} and {nameof(objectType)} was null");
 
-            var errors = profile.ValidateObject<TError>(objectToValidate, objectType);
+                return new List<TError>();
+            }
+
+            var errors = profile.ValidateObject(objectToValidate, objectType ?? objectToValidate.GetType(), new List<object>());
 
             return errors;
         }
 
-        public static IEnumerable<TError> Validate<TError>(ValidationProfile<TError> profile, object objectToValidate, Type objectType)
-        {
-            profile.ValidateVariable(nameof(profile));
-            objectType.ValidateVariable(nameof(objectType));
-
-            var errors = profile.ValidateObject<TError>(objectToValidate, objectType);
-
-            return errors;
-        }
-
-        private static IEnumerable<TError> ValidateObject<TError>(this ValidationProfile<TError> profile, object objectToValidate, Type objectType)
+        private static IEnumerable<TError> ValidateObject<TError>(this ValidationProfile<TError> profile, object objectToValidate, Type objectType, List<object> stackTrace)
         {
             var errors = new List<TError>();
+
+            if(objectToValidate != null && !objectToValidate.GetType().IsValueType)
+            {
+                // Only validate if haven't validated the object before
+                if (stackTrace.Contains(objectToValidate))
+                {
+                    return errors;
+                }
+                else
+                {
+                    stackTrace.Add(objectToValidate);
+                }
+            }
 
             var validators = profile.Validators.GetValidatorsForType(objectType);
 
@@ -62,23 +70,25 @@ namespace Sels.ObjectValidationFramework
                     // We have a validator for the item type. We now loop over the items in the collection and trigger validation
                     foreach (var item in (IEnumerable)objectToValidate)
                     {
-                        errors.AddRange(profile.ValidateObject<TError>(item, itemType));
+                        errors.AddRange(profile.ValidateObject(item, itemType, stackTrace));
                     }
                 }
 
                 // Fallthrough properties
-                errors.AddRange(ValidatePropertyTypes(profile, objectToValidate));
+                if (profile.FallThroughProperties && profile.Validators.Count > 1)
+                {
+                    errors.AddRange(ValidatePropertyTypes(profile, objectToValidate, stackTrace));
+                }
             }          
 
             return errors;
         }
 
-        private static IEnumerable<TError> ValidatePropertyTypes<TError>(this ValidationProfile<TError> profile, object objectToValidate)
+        private static IEnumerable<TError> ValidatePropertyTypes<TError>(this ValidationProfile<TError> profile, object objectToValidate, List<object> stackTrace)
         {
             var errors = new List<TError>();
 
-            if (objectToValidate == null) return errors;
-            if (profile.IsIgnored(objectToValidate.GetType())) return errors;
+            if (objectToValidate == null || profile.IsIgnored(objectToValidate.GetType())) return errors;
 
             foreach (var property in objectToValidate.GetProperties())
             {
@@ -91,7 +101,11 @@ namespace Sels.ObjectValidationFramework
                     var propertyValue = property.GetValue(objectToValidate);
 
                     // Validate underlying type
-                    errors.AddRange(profile.ValidateObject<TError>(propertyValue, propertyType));
+                    errors.AddRange(profile.ValidateObject(propertyValue, propertyType, stackTrace));
+                }
+                catch (StackOverflowException stackEx)
+                {
+                    profile.Logger.LogException(LogLevel.Error, () => $"Could not fallthrough validate property <{property}> on object <{objectToValidate}> because stack overflow was detected. Potential property loop.", stackEx);
                 }
                 catch(Exception ex)
                 {

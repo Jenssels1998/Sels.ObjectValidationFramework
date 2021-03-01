@@ -4,12 +4,12 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Text;
-using Sels.Core.Extensions.General.Validation;
+using Sels.Core.Extensions;
 using System.Security.Cryptography.X509Certificates;
-using Sels.Core.Extensions.Reflection.Types;
+using Sels.Core.Extensions.Reflection;
 using Sels.Core.Extensions.Logging;
-using Sels.Core.Extensions.Reflection.Object;
-using Sels.Core.Extensions.General.Generic;
+using Sels.Core.Extensions.Reflection;
+using Sels.Core.Extensions;
 using Sels.Core.Components.Serialization;
 
 namespace Sels.ObjectValidationFramework.Validator.Property.Collection
