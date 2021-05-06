@@ -13,6 +13,7 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Linq;
+using Sels.Core.Extensions.Linq;
 
 namespace Sels.ObjectValidationFramework
 {

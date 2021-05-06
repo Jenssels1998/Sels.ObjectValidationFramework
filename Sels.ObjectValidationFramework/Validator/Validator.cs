@@ -18,6 +18,7 @@ using Sels.Core.Components.Variable.Actions;
 using Sels.ObjectValidationFramework.Validator.Object;
 using Sels.Core.Extensions;
 using Sels.ObjectValidationFramework.Validator.Property.Collection;
+using Sels.Core.Extensions.Linq;
 
 namespace Sels.ObjectValidationFramework.Validator
 {
